@@ -1,20 +1,56 @@
 package com.example.demo.jenkins;
 
-import com.example.demo.jenkins.PipelineRequest;
-import com.example.demo.jenkins.JenkinsRepository;
-import com.example.demo.jenkins.JenkinsPipelineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class JenkinsPipelineServiceImpl implements JenkinsPipelineService {
 
     private static final Logger logger = LoggerFactory.getLogger(JenkinsPipelineServiceImpl.class);
     private final JenkinsRepository jenkinsRepository;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public JenkinsPipelineServiceImpl(JenkinsRepository jenkinsRepository) {
         this.jenkinsRepository = jenkinsRepository;
+    }
+    @Override
+    public SseEmitter streamBuildLog(String jobName, int buildNumber) {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        executorService.execute(() -> {
+            try {
+                jenkinsRepository.streamBuildLog(jobName, buildNumber,
+                        log -> {
+                            try {
+                                emitter.send(SseEmitter.event().data(log));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        }
+                );
+                emitter.complete();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
+        return emitter;
+    }
+    @Override
+    public int startBuild(BuildRequest buildRequest) throws Exception {
+        logger.info("Starting build for job: {}", buildRequest.getJobName());
+        try {
+            int buildNumber = jenkinsRepository.startBuild(buildRequest.getJobName(), buildRequest.getParameters());
+            logger.info("Build started for job: {}, build number: {}", buildRequest.getJobName(), buildNumber);
+            return buildNumber;
+        } catch (Exception e) {
+            logger.error("Error starting build for job: {}. Error: {}", buildRequest.getJobName(), e.getMessage(), e);
+            throw new Exception("Failed to start build: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -23,6 +59,12 @@ public class JenkinsPipelineServiceImpl implements JenkinsPipelineService {
         String jobConfig = createPipelineConfig(pipelineRequest);
         jenkinsRepository.createJob(pipelineRequest.getName(), jobConfig);
         logger.info("Pipeline '{}' created successfully", pipelineRequest.getName());
+    }
+
+    @Override
+    public String getJobLog(LogRequest logRequest) throws Exception {
+        logger.info("Fetching log for job: {}, build: {}", logRequest.getJobName(), logRequest.getBuildNumber());
+        return jenkinsRepository.getJobLog(logRequest.getJobName(), logRequest.getBuildNumber());
     }
 
     private String createPipelineConfig(PipelineRequest pipelineRequest) {
