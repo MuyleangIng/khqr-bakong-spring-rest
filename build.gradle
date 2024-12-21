@@ -21,16 +21,24 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://raw.githubusercontent.com/nbc-sdk-releases/maven/master/"
+    }
 }
 
 dependencies {
+    implementation 'org.json:json:20231013'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
-
-    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:javase:3.5.2'
+    implementation 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'commons-codec:commons-codec:1.15'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'kh.gov.nbc.bakong_khqr:sdk-java:1.0.0.11'
+
 }
 
 tasks.named('test') {

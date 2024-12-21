@@ -1,0 +1,10 @@
+# src/main/resources/application.yml
+server:
+  port: 8080
+
+bakong:
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiZmQ1NTYxMzE5OWQxNGYyMSJ9LCJpYXQiOjE3MzE0NjM4NDIsImV4cCI6MTczOTIzOTg0Mn0.g2bobVclBkayV_An6rVNnaXF5JuEA6YETwyQKXmTcIo
+
+spring:
+  application:
+    name: khqr-service
