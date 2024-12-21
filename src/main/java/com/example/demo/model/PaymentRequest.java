@@ -1,10 +1,11 @@
 package com.example.demo.model;
 
-import lombok.Data;
-import jakarta.validation.constraints.Positive;
-
-@Data
-public class PaymentRequest {
-    @Positive(message = "Amount must be greater than 0")
-    private Double amount;
-}
+public record PaymentRequest(
+        Double amount,
+        String currency,
+        String merchantName,
+        String bankAccount,
+        String storeLabel,
+        String terminalId,
+        Boolean isStatic
+) {}

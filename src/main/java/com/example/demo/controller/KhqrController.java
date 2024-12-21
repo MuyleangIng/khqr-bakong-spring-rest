@@ -1,11 +1,12 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.PaymentRequest;
+import com.example.demo.model.PaymentStatusResponse;
+import com.example.demo.model.QrResponse;
 import com.example.demo.service.KhqrService;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/khqr")
@@ -15,27 +16,13 @@ public class KhqrController {
 
     private final KhqrService khqrService;
 
-    @GetMapping("/test")
-    public Map<String, Object> test() {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            String qr = khqrService.generateQr();
-            String md5 = khqrService.generateMd5(qr);
-            boolean isPaid = khqrService.checkPayment(qr);
+    @PostMapping("/generate")
+    public QrResponse generateQr(@RequestBody PaymentRequest request) {
+        return khqrService.generateQr(request);
+    }
 
-            response.put("qrData", qr);
-            response.put("md5", md5);
-            response.put("isPaid", isPaid);
-            response.put("success", true);
-
-            log.info("Generated QR successfully with MD5: {}", md5);
-
-        } catch (Exception e) {
-            log.error("Error in test endpoint", e);
-            response.put("success", false);
-            response.put("error", e.getMessage());
-        }
-
-        return response;
+    @GetMapping("/verify/{md5Hash}")
+    public PaymentStatusResponse verifyPayment(@PathVariable String md5Hash) {
+        return khqrService.checkPayment(md5Hash);
     }
 }
