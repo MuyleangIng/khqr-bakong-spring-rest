@@ -1,11 +1,14 @@
 package com.example.demo.model;
 
-public record PaymentRequest(
-        Double amount,
-        String currency,
-        String merchantName,
-        String bankAccount,
-        String storeLabel,
-        String terminalId,
-        Boolean isStatic
-) {}
+import lombok.Data;
+
+@Data
+public class PaymentRequest {
+    private Double amount;
+    private String currency;
+    private String merchantName;
+    private String bankAccount;
+    private String storeLabel;
+    private String terminalId;
+    private String bankType;
+}
